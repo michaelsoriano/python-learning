@@ -16,8 +16,6 @@ books = [
     }
 ]
 
-#GET /books/ISBN
-
 def validBookObject(bookObject):
     if ("name" in bookObject 
             and "price" in bookObject 
@@ -61,5 +59,22 @@ def get_book_by_isbn(isbn):
                 'price' : book["price"]
             }
     return jsonify(return_value)
+
+@app.route('/books/<int:isbn>', methods=['PUT'])
+def replace_book(isbn):
+    request_data = request.get_json()
+    new_book = {
+        "name" : request_data['name'], 
+        "price" : request_data['price'], 
+        "isbn" : isbn
+    }
+    i = 0
+    for book in books:
+        currentIsbn = book["isbn"]
+        if currentIsbn == isbn:
+            books[i] = new_book
+        i += 1
+    response = Response("", status=204)
+    return response
 
 app.run(port=5000)
