@@ -1,7 +1,7 @@
 from flask import Flask, jsonify, request, Response
 from BookModel import *
 from settings import *
-import json
+import json, jwt, datetime
 
 def validBookObject(bookObject):
     if ("name" in bookObject 
@@ -11,8 +11,20 @@ def validBookObject(bookObject):
     else:
         return False
 
+@app.route('/login')
+def get_token():
+    exp_date = datetime.datetime.utcnow() + datetime.timedelta(seconds=100)
+    token = jwt.encode({'exp':exp_date}, app.config['SECRET_KEY'], algorithm='HS256');
+    return token;
+
+#GET /books?token=xxxxxxxxxxxxxxxxxx
 @app.route('/books')
 def get_books():
+    token = request.args.get('token')
+    try : 
+        jwt.decode(token, app.config['SECRET_KEY'])
+    except:
+        return jsonify({'error':'need a valid token'}),401
     return jsonify({'books' : Book.get_all_books()})
 
 @app.route('/books', methods=['POST'])
